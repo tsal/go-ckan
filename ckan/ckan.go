@@ -410,6 +410,7 @@ func (b *BaseModule) MarshalJSON() ([]byte, error) {
 	return json.Marshal(bw)
 }
 
+// Module implements a basic interface for plugins - this is a work-in-progress
 type Module interface {
 	GetSpecVersion() SpecVersion
 	SetSpecVersion(SpecVersion) error
@@ -418,7 +419,7 @@ type Module interface {
 	GetDownload() string
 	SetDownload(string) error
 	json.Marshaler
-}
+} // TODO: Figure out the "must-haves" and implement With<Value> for options at init and plugin capabilities
 
 var _ Module = &BaseModule{}
 
