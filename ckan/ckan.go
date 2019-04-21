@@ -18,7 +18,7 @@ const (
 )
 
 type SpecVersion struct {
-	specType    string 			// "int" or "string"
+	specType    string // "int" or "string"
 	specVersion interface{}
 }
 
@@ -41,7 +41,6 @@ func NewSpecVersion(min string) SpecVersion {
 	}
 	return ckanSpec
 }
-
 
 func (spec SpecVersion) AtLeast(v interface{}) bool {
 	if val, ok := v.(int); ok {
@@ -84,15 +83,15 @@ func (spec SpecVersion) MarshalJSON() ([]byte, error) {
 		if v, ok := spec.specVersion.(string); ok {
 			return json.Marshal(v)
 		} else {
-			return make([]byte,0), fmt.Errorf("you did a bad")
+			return make([]byte, 0), fmt.Errorf("you did a bad")
 		}
 	default:
-		return make([]byte,0), fmt.Errorf("you did a bad")
+		return make([]byte, 0), fmt.Errorf("you did a bad")
 	}
 }
 
 type License struct {
-	isList 	bool
+	isList  bool
 	license interface{}
 }
 
@@ -117,8 +116,8 @@ func (lic License) MarshalJSON() ([]byte, error) {
 }
 
 type PackageVersion struct {
-	epoch			uint
-	modVersion		string
+	epoch      uint
+	modVersion string
 }
 
 func NewPackageVersion(epoch uint, modVersion string) PackageVersion {
@@ -184,28 +183,28 @@ func (ckt *ckanInstallStep) As() (func() (string, error), bool) {
 }
 
 func (ckt *ckanInstallStep) Filter() (func() (interface{}, error), bool) {
-	return ckt.getOpt("filter" )
+	return ckt.getOpt("filter")
 }
 func (ckt *ckanInstallStep) FilterRegexp() (func() (interface{}, error), bool) {
-	return ckt.getOpt("filter_regexp" )
+	return ckt.getOpt("filter_regexp")
 }
 func (ckt *ckanInstallStep) IncludeOnly() (func() (interface{}, error), bool) {
 	if !ckt.spec.AtLeast("v1.24") {
 		return func() (interface{}, error) { return struct{}{}, nil }, false
 	}
-	return ckt.getOpt("include_only" )
+	return ckt.getOpt("include_only")
 }
 func (ckt *ckanInstallStep) IncludeOnlyRegexp() (func() (interface{}, error), bool) {
 	if !ckt.spec.AtLeast("v1.24") {
 		return func() (interface{}, error) { return struct{}{}, nil }, false
 	}
-	return ckt.getOpt("include_only_regexp" )
+	return ckt.getOpt("include_only_regexp")
 }
 func (ckt *ckanInstallStep) FindMatchesFiles() (func() (bool, error), bool) {
 	if !ckt.spec.AtLeast("v1.16") {
 		return func() (bool, error) { return false, nil }, false
 	}
-	if f, ok := ckt.getOpt("find_matches_files" ); ok {
+	if f, ok := ckt.getOpt("find_matches_files"); ok {
 		val, err := f()
 		if err != nil {
 			if v, ok := val.(bool); ok {
@@ -241,7 +240,7 @@ func (ckt *ckanInstallStep) findOrRegexpMarshalJSON() ([]byte, error) {
 	}
 	var bFind []byte
 	buffer := bytes.NewBuffer(bFind)
-	buffer.WriteString(fmt.Sprintf("\"%s\":%s,", ckt.installType, string(jsonVal) ))
+	buffer.WriteString(fmt.Sprintf("\"%s\":%s,", ckt.installType, string(jsonVal)))
 	b = append(b, buffer.Bytes()...)
 	return b, err
 }
@@ -253,7 +252,7 @@ func (ckt *ckanInstallStep) optsMarshalJSON() ([]byte, error) {
 		v, _ := v()
 		jsonVal, _ := json.Marshal(v)
 		buffer := bytes.NewBufferString("\"as\":")
-		buffer.WriteString(fmt.Sprintf("%s,", string(jsonVal) ))
+		buffer.WriteString(fmt.Sprintf("%s,", string(jsonVal)))
 		b = append(b, buffer.Bytes()...)
 	}
 	return b, err
@@ -320,71 +319,71 @@ func (ckt *ckanInstallStep) SetOption(s string, i interface{}) (InstallStep, err
 var _ InstallStep = &ckanInstallStep{}
 
 type InstallStep interface {
-	As()								(func() (string, error), bool)
-	Filter()							(func() (interface{}, error), bool)
-	FilterRegexp()						(func() (interface{}, error), bool)
-	IncludeOnly()						(func() (interface{}, error), bool)
-	IncludeOnlyRegexp()					(func() (interface{}, error), bool)
-	FindMatchesFiles()					(func() (bool, error), bool)
-	SetOption(string, interface{})		(InstallStep, error)
-	json.Marshaler						// Requirement #1
+	As() (func() (string, error), bool)
+	Filter() (func() (interface{}, error), bool)
+	FilterRegexp() (func() (interface{}, error), bool)
+	IncludeOnly() (func() (interface{}, error), bool)
+	IncludeOnlyRegexp() (func() (interface{}, error), bool)
+	FindMatchesFiles() (func() (bool, error), bool)
+	SetOption(string, interface{}) (InstallStep, error)
+	json.Marshaler // Requirement #1
 }
 
 type BaseModule struct {
-	SpecVersion		SpecVersion				`json:"spec_version"` // TODO: Implement comparisons
-	Name			string					`json:"name"`
-	Abstract		string					`json:"abstract"`
-	Identifier		string					`json:"identifier"` // TODO: implement ValidIdentifier()
-	Download		string					`json:"download"`   // TODO: evaluate url.URL
-	License			License					`json:"license"`    // TODO: implement ValidLicense()
-	Version			PackageVersion			`json:"version"`
-	Install			[]InstallStep			`json:"install,omitempty"`
-	Comment			string					`json:"comment,omitempty"`
-	Author			interface{}				`json:"author,omitempty"`
-	Description		string					`json:"description,omitempty"` // TODO: implement a better way
-	ReleaseStatus	string					`json:"release_status,omitempty"` // TODO: implement detection of stability
-	KSPVersion		string					`json:"ksp_version,omitempty"` // TODO: version checking
-	KSPVersionMin	string					`json:"ksp_version_min,omitempty"` // TODO: version checking
-	KSPVersionMax	string					`json:"ksp_version_max,omitempty"` // TODO: version checking
-	KSPVersionStrict bool					`json:"ksp_version_strict,omitempty"` // TODO: version checking
-	Tags			[]string				`json:"tags,omitempty"`
-	Depends			[]*ModuleRelationship	`json:"depends,omitempty"`
-	Recommends		[]*ModuleRelationship	`json:"recommends,omitempty"`
-	Suggests		[]*ModuleRelationship	`json:"suggests,omitempty"`
-	Supports		[]*ModuleRelationship	`json:"supports,omitempty"`
-	Conflicts		[]*ModuleRelationship	`json:"conflicts,omitempty"`
-	ReplacedBy		[]*ModuleRelationship	`json:"replaced_by,omitempty"`
-	Resources		*Resources				`json:"resources,omitempty"`
-	Kind			string					`json:"kind,omitempty"`
-	Provides		[]string				`json:"provides,omitempty"` // TODO: implement identifiers check
-	DownloadSize	uint					`json:"download_size,omitempty"`
-	DownloadHash	*DownloadHash			`json:"download_hash,omitempty"`
-	ContentType		string					`json:"download_content_type,omitempty"`
+	SpecVersion      SpecVersion           `json:"spec_version"` // TODO: Implement comparisons
+	Name             string                `json:"name"`
+	Abstract         string                `json:"abstract"`
+	Identifier       string                `json:"identifier"` // TODO: implement ValidIdentifier()
+	Download         string                `json:"download"`   // TODO: evaluate url.URL
+	License          License               `json:"license"`    // TODO: implement ValidLicense()
+	Version          PackageVersion        `json:"version"`
+	Install          []InstallStep         `json:"install,omitempty"`
+	Comment          string                `json:"comment,omitempty"`
+	Author           interface{}           `json:"author,omitempty"`
+	Description      string                `json:"description,omitempty"`        // TODO: implement a better way
+	ReleaseStatus    string                `json:"release_status,omitempty"`     // TODO: implement detection of stability
+	KSPVersion       string                `json:"ksp_version,omitempty"`        // TODO: version checking
+	KSPVersionMin    string                `json:"ksp_version_min,omitempty"`    // TODO: version checking
+	KSPVersionMax    string                `json:"ksp_version_max,omitempty"`    // TODO: version checking
+	KSPVersionStrict bool                  `json:"ksp_version_strict,omitempty"` // TODO: version checking
+	Tags             []string              `json:"tags,omitempty"`
+	Depends          []*ModuleRelationship `json:"depends,omitempty"`
+	Recommends       []*ModuleRelationship `json:"recommends,omitempty"`
+	Suggests         []*ModuleRelationship `json:"suggests,omitempty"`
+	Supports         []*ModuleRelationship `json:"supports,omitempty"`
+	Conflicts        []*ModuleRelationship `json:"conflicts,omitempty"`
+	ReplacedBy       []*ModuleRelationship `json:"replaced_by,omitempty"`
+	Resources        *Resources            `json:"resources,omitempty"`
+	Kind             string                `json:"kind,omitempty"`
+	Provides         []string              `json:"provides,omitempty"` // TODO: implement identifiers check
+	DownloadSize     uint                  `json:"download_size,omitempty"`
+	DownloadHash     *DownloadHash         `json:"download_hash,omitempty"`
+	ContentType      string                `json:"download_content_type,omitempty"`
 }
 
 type Resources struct {
-	Homepage	string					`json:"homepage,omitempty"`
-	Bugtracker	string					`json:"bugtracker,omitempty"`
-	Repository	string					`json:"repository,omitempty"`
-	Ci			string					`json:"ci,omitempty"`
-	Spacedock	string					`json:"spacedock,omitempty"`
-	Curse		string					`json:"curse,omitempty"`
+	Homepage   string `json:"homepage,omitempty"`
+	Bugtracker string `json:"bugtracker,omitempty"`
+	Repository string `json:"repository,omitempty"`
+	Ci         string `json:"ci,omitempty"`
+	Spacedock  string `json:"spacedock,omitempty"`
+	Curse      string `json:"curse,omitempty"`
 }
 
 type DownloadHash struct {
-	Sha1		string					`json:"sha1"`
-	Sha256		string					`json:"sha256"`
+	Sha1   string `json:"sha1"`
+	Sha256 string `json:"sha256"`
 }
 
 type ModuleRelationship struct {
-	Name			string					`json:"name"`
-	MinVersion		string					`json:"min_version,omitempty"`
-	MaxVersion		string					`json:"max_version,omitempty"`
-	Version			string					`json:"version,omitempty"`
-	AnyOf			[]*ModuleRelationship	`json:"any_of,omitempty"`
+	Name       string                `json:"name"`
+	MinVersion string                `json:"min_version,omitempty"`
+	MaxVersion string                `json:"max_version,omitempty"`
+	Version    string                `json:"version,omitempty"`
+	AnyOf      []*ModuleRelationship `json:"any_of,omitempty"`
 }
 
-func (b *BaseModule) GetSpecVersion() SpecVersion {	return b.SpecVersion }
+func (b *BaseModule) GetSpecVersion() SpecVersion { return b.SpecVersion }
 func (b *BaseModule) SetSpecVersion(version SpecVersion) error {
 	b.SpecVersion = version
 	return nil
@@ -403,6 +402,7 @@ func (b *BaseModule) SetDownload(s string) error {
 type baseModuleJSON struct {
 	BaseModule
 }
+
 func (b *BaseModule) MarshalJSON() ([]byte, error) {
 	bw := baseModuleJSON{
 		*b,
