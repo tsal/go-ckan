@@ -1,4 +1,4 @@
-module go-ckan
+module github.com/tsal/go-ckan
 
 go 1.12
 
