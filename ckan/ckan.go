@@ -103,16 +103,19 @@ func NewLicense(isList bool, license interface{}) License {
 }
 
 func (lic License) MarshalJSON() ([]byte, error) {
+	var b []byte
+	var err error
 	// Speed things up a little
 	if lic.isList {
-		return json.Marshal(lic.license)
+		b, err = json.Marshal(lic.license)
 	} else {
 		if v, ok := lic.license.(string); ok {
-			return json.Marshal(v)
+			b, err = json.Marshal(v)
 		} else {
-			return json.Marshal(v)
+			b, err = json.Marshal(v)
 		}
 	}
+	return b, err
 }
 
 type PackageVersion struct {
